@@ -1,34 +1,35 @@
 ## Contents ##
 
-1.  Overview
-2.  Warnings
+1.  [Overview](#1-overview)
+2.  [Warnings](#2-warnings)
     1. Numeric Precision
     2. Known Incompatibilities
-3.  Setup
+3.  [Setup](#3-setup)
     1. Installation
     2. Testing
     3. Loading
     4. Backwards Compatibility
-4.  API
+4.  [API](#4-api)
     1. Variables
     2. Functions
-5. Format string syntax
+5. [Format string syntax](#5-format-string-syntax)
     1. Repeat markers
     2. Tables
     3. Names
     4. Bitpacks
-6. Data items
+    5. Backreferences
+6. [Data items](#6-data-items)
     1. Controlling endianness
     2. Seeking
     3. Reading and writing
-7. Adding new formats
-8. Credits
+7. [Adding new formats](#7-adding-new-formats)
+8. [Credits](#8-credits)
 
 
 
 ## 1. Overview ##
 
-VStruct is a library for Lua 5.1, 5.2, 5.3, and LuaJIT 2. It provides functions for manipulating binary data, in particular for reading binary files or byte buffers into Lua values and for writing Lua values back into files or buffers. Supported data types include:
+VStruct is a library for Lua 5.1-5.4 and LuaJIT 2. It provides functions for manipulating binary data, in particular for reading binary files or byte buffers into Lua values and for writing Lua values back into files or buffers. Supported data types include:
 
   * signed and unsigned integers of arbitrary size
   * fixed and floating point numbers
@@ -44,7 +45,7 @@ In addition, the library supports seeking, alignment, and byte order controls, r
 
 ### 2.1 Numeric Precision ###
 
-When reading and writing numeric formats, vstruct is inherently limited by lua's number format, which is by default the IEEE 754 double. What this means in practice is that formats `i`, `u`, `c`, and `p` (see section 6) may be subject to data loss, if they contain more than 52 significant bits. (The same is true of numeric constants declared in Lua itself, of course, and other libraries which store values in lua numbers). In other words - be careful when manipulating data, especially 64-bit ints, that may not fit in Lua's native types.
+When reading and writing numeric formats, vstruct is inherently limited by lua's number format, which is by default the IEEE 754 double. What this means in practice is that formats `i`, `u`, `c`, and `p` (see [Data Items](#6-data-items)) may be subject to data loss, if they contain more than 52 significant bits. (The same is true of numeric constants declared in Lua itself, of course, and other libraries which store values in lua numbers). In other words - be careful when manipulating data, especially 64-bit ints, that may not fit in Lua's native types.
 
 Formats not listed above are not subject to this limitation, as they either do not use Lua numbers at all, or do so only in ways that are guaranteed to be lossless.
 
@@ -130,7 +131,7 @@ If you do need to run legacy code and can't, for whatever reason, update it to u
 
 vstruct, once loaded, exports a number of variables and functions, all of them available in the table returned by `require "vstruct"`.
 
-In this section, a *format string* means the string used to describe a binary format, controlling how data is read or written. The syntax for format strings is described in section 5; the semantics in section 6. They are not be confused with the format strings used by `string.format`.
+In this section, a *format string* means the string used to describe a binary format, controlling how data is read or written. The syntax for format strings is described in [section 5](#5-format-string-syntax); the semantics in [section 6](#6-data-items). They are not be confused with the format strings used by `string.format`.
 
 
 ### 4.1 Error Handling ###
@@ -234,7 +235,7 @@ Is equivalent to:
     d = vstruct.read(fmt, fd)
     vstruct.write(fmt, fd, d)
 
-If `name` is specified, it additionally registers the format string it just compiled under `name`, allowing it to referenced in future format strings as `&name`; see section 5.5 "Splices" for details.
+If `name` is specified, it additionally registers the format string it just compiled under `name`, allowing it to referenced in future format strings as `&name`; see [Splices](#55-splices) for details.
 
 --------
 
@@ -270,7 +271,7 @@ A format string consists of a series of *format items*. A format item is:
   * a splice `&name`
   * a comment, starting with `--` and ending at the next newline
 
-These are explained in detail in the rest of this section, apart from data items, seek controls, and endianness controls, which are a sufficiently lengthy topic that they have a section of their own (section 6).
+These are explained in detail in the rest of this section, apart from data items, seek controls, and endianness controls, which are a sufficiently lengthy topic that they have [a section of their own](#6-data-items).
 
 In general, whitespace may be omitted where the result is unambiguous, and when present, the amount and type of whitespace is irrelevant. Comments are considered to be whitespace.
 
@@ -319,7 +320,7 @@ Within a format string, tables may be nested arbitrarily.
 
 ### 5.3 Names ###
 
-A name consists of a valid Lua identifier, or sequence of such identifiers separated with '.', followed by a ':'. It must be followed by a data item or a table. The following item will be stored in/retrieved from a field with the given name, rather than being read/written sequentially as is the default.
+A name consists of a valid Lua identifier, or sequence of such identifiers separated with `.`, followed by a `:`. It must be followed by a data item or a table. The following item will be stored in/retrieved from a field with the given name, rather than being read/written sequentially as is the default.
 
 For example, this table:
 
@@ -572,7 +573,7 @@ Typically, this will load the file `vstruct/io/<op>.lua` - in our above example,
 
 ### 7.2 How they are used ###
 
-When loaded, the handler for an IO operation returns a table containing some or all of the following functions. Note that '...' here means the arguments as given in the format string - '2,8' in the above example.
+When loaded, the handler for an IO operation returns a table containing some or all of the following functions. Note that `...` here means the arguments as given in the format string - `2,8` in the above example.
 
 --------
 
@@ -584,7 +585,7 @@ Returns true if, when writing, this format consumes a value from the table of in
 
     size(...)
 
-Returns the exact amount of data, in bytes, that this format will consume from the input if `read` is called, or the exact amount it will append to the output if `write` is called. If this cannot yet be determined (for example, 'z' with no arguments or any usage of 'c'), if it changes the position of the read/write pointer (for example, seek commands), or if does anything else that might interfere with vstruct's own use of the file handle, such as seeking, it should return nil.
+Returns the exact amount of data, in bytes, that this format will consume from the input if `read` is called, or the exact amount it will append to the output if `write` is called. If this cannot yet be determined (for example, `z` with no arguments or any usage of `c`), if it changes the position of the read/write pointer (for example, seek commands), or if does anything else that might interfere with vstruct's own use of the file handle, such as seeking, it should return nil.
 
 Formats that neither interfere with the file handle nor read or write data should return 0; this is the case, for example, for the endianness controls.
 
@@ -626,5 +627,5 @@ While most of the library code was written by me (Bex Kelly), the existence of t
   * The floating point code was contributed by Peter Cawley ("corsix") on lua-l, as was support for Lua 5.2.
   * sanooj, from #lua on freenode, has done so much testing and bug reporting that at this point he's practically a co-author; the 'struct-test-gen' module in test/ is his work, and has aided in detected many bugs.
   * The overall library design and interface are the result of much discussion with rici, sanooj, Keffo, snogglethorpe, Spark, kozure, Vornicus, McMartin, and probably several others I've forgotten about on IRC (#lua on freenode and #code on nightstar).
-  * Lua 5.3 compatibility was contributed by deepakjois
+  * Lua 5.3 compatibility, and LuaRocks support, was contributed by deepakjois
   * Finally, without Looking Glass Studios to make System Shock, and Team TSSHP (in particular Jim "hairyjim" Cameron) to reverse engineer it, I wouldn't have had a reason to write this library in the first place.
