@@ -1,10 +1,24 @@
-2.1 (planned)
--------------
-Format combinators.
-Better error handling, and more error handling options for the user.
-Backreferences.
-Support for 5.3, and optional use of 5.3-specific features (new numeric types, bitwise operators, pack/unpack functions) for improved performance.
-Pre-5.3, optional use of FFI, bit32, and other struct libraries (lpack/struct) for improved performance.
+2.2
+---
+Backreference support added.
+
+2.1.1
+-----
+Test and documentation improvements.
+
+2.1.0
+-----
+Lua 5.3 support (thanks @deepakjois!).
+
+2.0.2
+-----
+LuaRocks metadata fixes.
+
+2.0.1
+-----
+Internal optimizations resulting in significantly improved performance when operating on string cursors rather than fds.
+Dropped support for LuaDist.
+Added support for LuaRocks.
 
 2.0
 ---
