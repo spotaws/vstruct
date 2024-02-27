@@ -13,7 +13,7 @@ local ast = {}
 local cache = {}
 
 -- load the implementations of the various AST node types
-for _,node in ipairs { "IO", "List", "Name", "Table", "Repeat", "Root", "Bitpack" } do
+for _,node in ipairs { "IO", "List", "Name", "Table", "Repeat", "Root", "Bitpack", "Number" } do
   ast[node] = require ((...).."."..node)
 end
 
@@ -142,9 +142,8 @@ function ast.splice(lex)
 end
 
 function ast.repetition(lex)
-  local count = tonumber(lex.next().text)
+  local count = ast.Number(lex.next().text)
   ast.require(lex, "*");
-
   return ast.Repeat(count, ast.next(lex))
 end
 
@@ -213,7 +212,7 @@ format -> commands
 
 command -> repeat | bitpack | group | named | value | control | splice
 
-repeat -> NUMBER '*' command | command '*' NUMBER
+repeat -> count '*' command
 bitpack -> '[' NUMBER '|' commands ']'
 group -> '(' commands ')'
 
@@ -221,6 +220,7 @@ named -> NAME ':' value
 value -> table | primitive
 table -> '{' commands '}'
 
+count -> '#' NAME | NUMBER
 splice -> '&' NAME
 
 primitive -> ATOM NUMBERS

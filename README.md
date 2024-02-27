@@ -261,13 +261,14 @@ If `unpack` is false or unspecified, it behaves the same as `vstruct.read`.
 
 A format string consists of a series of *format items*. A format item is:
 
-  * a data item, seek control, or endianness control (see section 6)
-  * a repeat marker `N*` followed by a format item, or a sequence of format items enclosed in '(' and ')'
-  * a table '{ ... }' enclosing any number of format items
-  * a name 'foo:' followed by a data item or table
-  * a bitpack '[S| ... ]' enclosing any number of *bitpack-capable* format items
-  * a splice '&name'
-  * a comment, starting with '--' and ending at the next newline
+  * a data item, seek control, or endianness control (see [Data Items](#6-data-items))
+  * a constant repeat marker `N*` followed by a format item, or a sequence of format items enclosed in `(` and `)`
+  * a variable repeat marker `#foo*` followed by a format item, or a sequence of format items enclosed in `(` and `)`
+  * a table `{ ... }` enclosing any number of format items
+  * a name `foo:` followed by a data item or table
+  * a bitpack `[S| ... ]` enclosing any number of *bitpack-capable* format items
+  * a splice `&name`
+  * a comment, starting with `--` and ending at the next newline
 
 These are explained in detail in the rest of this section, apart from data items, seek controls, and endianness controls, which are a sufficiently lengthy topic that they have a section of their own (section 6).
 
@@ -276,7 +277,7 @@ In general, whitespace may be omitted where the result is unambiguous, and when 
 
 ### 5.1 Repeat markers ###
 
-A repeat marker consists of a decimal number *N*, followed by a `*`, followed by a format item (or a group of such items enclosed in parentheses). The following item is repeated N times. For example, these three format strings:
+A repeat marker consists of a *repeat count*, followed by a `*`, followed by a format item (or a group of such items enclosed in parentheses). The following item is repeated a number of times equal to the count. For example, these three format strings:
 
     "u4 u4 u4 u4"
     "{ u2 b1 } { u2 b1 }"
@@ -287,6 +288,12 @@ Can be expressed more concisely as these:
     "4*u4"
     "2*{ u2 b1 }"
     "3*(u2 u2 u4) m2"
+
+A repeat count can be any decimal number (including 0, in which case no data is read or written); it can also be a *backreference*, consisting of the name of a field (see [Names](#53-names)) prefixed with `#`. In the latter case, the value of that field, which must be numeric and must have already been read, is used as the repeat count. For example, the common pattern of a length-prefixed array can be expressed as:
+
+    "length:u4 #length*b1"
+
+This will first read a 4-byte unsigned length, then read a number of 1-byte booleans equal to the length just read.
 
 
 ### 5.2 Tables ###

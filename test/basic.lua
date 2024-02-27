@@ -66,6 +66,8 @@ T("groups", "> 2*(u1 i1)", x"01 FF 02 FE", { 1, -1, 2, -2 })
 T("tables", "> 2*{ u1 i1 }", x"01 FF 02 FE", { { 1, -1 }, { 2, -2 } })
 T("names", "> coords:{ x:u1 y:u1 } coords.z:u1", x"01 02 03", { coords = { x = 1, y = 2, z = 3 } })
 
+T("backreferences", "count:u1 #count*u1", x"04 80 FF 11 22", { count = 4; 128, 255, 17, 34 })
+
 T("UCS-2 z",  "> z,2",  x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000")
 T("UCS-2 z8", "> z8,2", x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000 0000")
 

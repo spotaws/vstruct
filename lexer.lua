@@ -15,7 +15,8 @@ lexeme (false)    "%-%-[^\n]*"  -- comments
 lexeme "key"      "([%a_][%w_.]*):"
 lexeme "io"       "([-+@<>=])"
 lexeme "io"       "([%a_]+)"
-lexeme "number"   "([%d.,]+)"
+lexeme "number"   "([%d.,]+)" -- may be multiple comma-separated numbers
+lexeme "number"   "(#[%a_][%w_.]*)"
 lexeme "splice"   "&(%S+)"
 lexeme "{"        "%{"
 lexeme "}"        "%}"
