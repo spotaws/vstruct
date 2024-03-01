@@ -33,7 +33,7 @@ function IO:__init(name, args)
   self.size = io(name, "size", self:get_argv())
   self.hasvalue = io(name, "hasvalue", self:get_argv())
 end
-  
+
 function IO:read(fd, data)
   local buf
 

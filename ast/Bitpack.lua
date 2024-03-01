@@ -6,17 +6,17 @@ local unpack = table.unpack or unpack
 -- return an iterator over the individual bits in buf
 local function biterator(buf)
   local e = io("endianness", "get")
-  
+
   local data = { buf:byte(1,-1) }
   local bit = 7
   local byte = e == "big" and 1 or #data
   local delta = e == "big" and 1 or -1
 
-  return function()    
+  return function()
     local v = math.floor(data[byte]/(2^bit)) % 2
-    
+
     bit = (bit - 1) % 8
-    
+
     if bit == 7 then -- we just wrapped around
       byte = byte + delta
     end
@@ -31,16 +31,16 @@ local function bitpacker(buf, size)
   end
 
   local e = io("endianness", "get")
-  
+
   local bit = 7
   local byte = e == "big" and 1 or size
   local delta = e == "big" and 1 or -1
-      
+
   return function(b)
     buf[byte] = buf[byte] + b * 2^bit
 
     bit = (bit - 1) % 8
-    
+
     if bit == 7 then -- we just wrapped around
       byte = byte + delta
     end
@@ -68,5 +68,5 @@ function Bitpack:write(fd, ctx)
   self:writebits(bitpacker(buf, self.size), ctx)
   fd:write(string.char(unpack(buf)))
 end
-  
+
 return Bitpack
