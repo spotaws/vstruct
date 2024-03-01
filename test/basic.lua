@@ -66,7 +66,20 @@ T("groups", "> 2*(u1 i1)", x"01 FF 02 FE", { 1, -1, 2, -2 })
 T("tables", "> 2*{ u1 i1 }", x"01 FF 02 FE", { { 1, -1 }, { 2, -2 } })
 T("names", "> coords:{ x:u1 y:u1 } coords.z:u1", x"01 02 03", { coords = { x = 1, y = 2, z = 3 } })
 
-T("backreferences", "count:u1 #count*u1", x"04 80 FF 11 22", { count = 4; 128, 255, 17, 34 })
+T("backref-repeat", "count:u1 #count*u1", x"04 80 FF 11 22", { count = 4; 128, 255, 17, 34 })
+T("backref-seek", "offset:u1 @#offset u1",
+  x"02 00 03 00 00", { offset = 2; 3 }, x"02 00 03")
+T("backref-str", "< size:u2 str:s#size",
+  "\x10\x00abcdefghijklmnopqrstuvwxyz", { size = 16; str = "abcdefghijklmnop"; },
+  "\x10\x00abcdefghijklmnop")
+
+T("scoping", "outer:{ size:u1 s#size inner:{ size:u1 s#size } } outer.inner.size:u1",
+  "\x0Aouter-text\x0Cinner-string\x0C",
+  { outer = { size = 10; "outer-text"; inner = { size = 12; "inner-string" }}})
+
+T("nesting", "header:{ size:u1 offset:u1 } @#header.offset s#header.size",
+  "\x04\x06    text", { header = { size = 4; offset = 6; }; "text" },
+  "\x04\x06\x00\x00\x00\x00text")
 
 T("UCS-2 z",  "> z,2",  x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000")
 T("UCS-2 z8", "> z8,2", x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000 0000")

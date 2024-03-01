@@ -8,8 +8,12 @@ local defaults = {}
 -- equals the amount that will be RWd.
 -- If the format doesn't do any, should return 0. If the amount cannot be
 -- determined ahead of time (for example, format c) should return nil.
+-- If the caller specified a constant size, it will be passsed in here; if they
+-- specified a runtime-determined size (via backreferences), it will be passed
+-- in at runtime, but will be `true` at compile time. Implementations should
+-- respect both.
 function defaults.size(n)
-  assert(tonumber(n), "format requires a size")
+  assert(n, "format requires a size")
   return tonumber(n)
 end
 

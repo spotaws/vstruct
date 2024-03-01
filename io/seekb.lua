@@ -7,7 +7,7 @@ function seek.hasvalue()
 end
 
 function seek.size(w)
-  assert(tonumber(w), "format requires a size")
+  assert(w, "format requires a size")
   return nil
 end
 

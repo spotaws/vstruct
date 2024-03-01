@@ -7,10 +7,13 @@ local io = require "vstruct.io"
 local p = {}
 
 function p.size(size, frac)
-  assert(tonumber(size), "format requires a size")
-  assert(tonumber(frac), "format requires a fractional-part size")
-  assert(size*8 >= frac, "fixed point number has more fractional bits than total bits")
-  
+  assert(size, "format requires a size")
+  assert(frac, "format requires a fractional-part size")
+  if tonumber(size) and tonumber(frac) then
+    -- Check only possible if both values were specified at compile time
+    assert(size*8 >= frac, "fixed point number has more fractional bits than total bits")
+  end
+
   return size
 end
 

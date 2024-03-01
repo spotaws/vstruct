@@ -290,12 +290,7 @@ Can be expressed more concisely as these:
     "2*{ u2 b1 }"
     "3*(u2 u2 u4) m2"
 
-A repeat count can be any decimal number (including 0, in which case no data is read or written); it can also be a *backreference*, consisting of the name of a field (see [Names](#53-names)) prefixed with `#`. In the latter case, the value of that field, which must be numeric and must have already been read, is used as the repeat count. For example, the common pattern of a length-prefixed array can be expressed as:
-
-    "length:u4 #length*b1"
-
-This will first read a 4-byte unsigned length, then read a number of 1-byte booleans equal to the length just read.
-
+Repeat counts can be either numeric literals or [backreferences](#56-backreferences)
 
 ### 5.2 Tables ###
 
@@ -369,11 +364,34 @@ Splices let you concisely refer to other format strings, provided that those oth
     vstruct.read("name:z128 position:{ &coord }")
 
 
+### 5.6 Backreferences ###
+
+In addition to numeric literals, vstruct supports *backreferences*, allowing the value from an earlier read to be used directly in the format string, instead of needing to perform one read, then construct a new format string based on the results. Backreferences are supported for repeat counts and field widths; they are *not* currently supported for bitpacks.
+
+A backreference consists of a valid Lua identifier, or sequence of such identifiers separated by `.`, prefixed with a `#`. When encountered on read or write, the value of the named field will be used. If that field has not been read yet, or if it does not hold a numeric type, an error is thrown.
+
+Using backreferences allows you to replace this code:
+
+    local header = vstruct.read(fd, "offset:u4 count:u4")
+    local toc = vstruct.read(fd, "@"..header.offset.." "..header.count.."*&toc_entry")
+
+With the much more readable:
+
+    local toc = vstruct.read(fd, [[
+        header:{ offset:u4 count:u4 }
+        @#header.offset #header.count * &toc_entry
+    ]])
+
+Note that when writing, it is (as always) up to the caller to make sure the data structure is internally consistent; if you use the above code to read in a TOC, add or remove entries from it, and then write it back out, make sure you also update `toc.header.count` accordingly!
+
+
 ## 6. Data Items ##
 
 This section describes the individual field types that make up the bulk of a format string, as well as the seek and endianness controls available. All data items consist of a single letter or punctuation character, optionally followed by one or more comma-separated numbers indicating the size of the corresponding field (or other parameters specific to the type).
 
 By convention, in this section, upper-case single letters represent decimal numbers to be filled in when the format string is written. In particular, *S* is consistently used to mean the size, in bytes, of a field, and *A* an address or offset in the packed data.
+
+Sizes and offsets can be either numeric literals or [backreferences](#56-backreferences), although the latter is usually only useful for seeking and, sometimes, string formats.
 
 
 ### 6.1 Controlling Endianness ###
@@ -585,15 +603,26 @@ Returns true if, when writing, this format consumes a value from the table of in
 
     size(...)
 
-Returns the exact amount of data, in bytes, that this format will consume from the input if `read` is called, or the exact amount it will append to the output if `write` is called. If this cannot yet be determined (for example, `z` with no arguments or any usage of `c`), if it changes the position of the read/write pointer (for example, seek commands), or if does anything else that might interfere with vstruct's own use of the file handle, such as seeking, it should return nil.
+This function is called both at compile time and at runtime. Its arguments are the size specifiers from the format string, with the following preprocessing:
 
-Formats that neither interfere with the file handle nor read or write data should return 0; this is the case, for example, for the endianness controls.
+- numeric parameters are passed through `tonumber()`
+- backreference parameters are passed as `true` at compile time and as the numeric value the backreference resolved to at runtime
+- zero-length parameters are passed as `nil`
+- all other parameters are passed as strings, unmodified
 
-The default implementation asserts that a size was specified and returns nil.
+In practice, this almost always means that the first parameter will either be entirely absent, a constant numeric size, or `true` at compile time and a numeric size at runtime.
+
+The function must return the exact amount of data, in bytes, that this format will consume from the input if `read` is called, or the exact amount it will append to the output if `write` is called. If this cannot yet be determined (for example, the `c` format, or if backreferences are involved), if it changes the position of the read/write pointer (for example, seek commands), or if does anything else that might interfere with vstruct's own use of the file handle, it should return nil.
+
+Formats that neither change the state of the file handle nor read or write data should return 0; this is the case, for example, for the endianness controls.
+
+The default implementation asserts that a size (either constant or backreference) was specified, then returns the specified size or nil, respectively.
 
 --------
 
     write(fd, data, ...)
+
+This is called with the file descriptor (which may not be backed by an actual file, but will conform to the Lua file API), a data value to pack, and tail arguments based on the size specifiers in the format string (as with `size()`).
 
 If `size()` returned a value earlier, this *must* ignore `fd`, pack `data` into a string, and return the string - the caller will handle writing the string to the fd in an efficient manner. If it did not, this function may freely choose either to return a packed string, or to manipulate `fd` directly (in which case it should return nil).
 
@@ -603,19 +632,21 @@ Some operators, of course, must manipulate `fd` directly by their very nature (s
 
     read(fd, buffer, ...)
 
-If `size()` returned a value earlier, `buffer` will be a string of exactly that many bytes; `read` *must* ignore `fd` and return the value represented by the buffer. If `size()` returned nil, `read` must manipulate `fd` directly to get the data it needs.
+This is called with the same arguments as `write()`, except that if `size()` returned a value earlier, `buffer` will be a string of exactly that many bytes (containing the bytestream to be unpacked); otherwise `buffer` will be nil.
+
+If `size()` returned a value earlier, `read` *must* ignore `fd` and return the value represented by the contents of `buffer`. If `size()` returned nil, `read` must manipulate `fd` directly to get the data it needs, and ignore `buffer`. In either case it must return the unpacked value.
 
 --------
 
     writebits(bit, data, ...)
 
-This is called when the operation is performed inside a bitpack. Data should be written bit-by-bit, MSB first; to write a bit `B` (which must be 0 or 1), call `bit(B)`. `bit()` does not presently accept multiple arguments to write multiple bits at once.
+This is called when the operation is performed inside a bitpack. Data should be written bit-by-bit, MSB first; to write a bit `B` (which must be 0 or 1), call `bit(B)`. `bit()` does not presently accept multiple arguments to write multiple bits at once. Other arguments are identical to `write()`.
 
 --------
 
     readbits(bit, ...)
 
-The converse of `writebits`. Each call to `bit()` returns the next bit, MSB first.
+The converse of `writebits`. Each call to `bit()` returns the next bit, MSB first. Other arguments are identical to `read()`.
 
 
 

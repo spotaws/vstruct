@@ -4,7 +4,7 @@ local io = require "vstruct.io"
 local z = {}
 
 function z.size(size, csize)
-  return size
+  return tonumber(size)
 end
 
 -- null terminated string

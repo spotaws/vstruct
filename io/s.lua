@@ -8,12 +8,12 @@ function s.size(w)
 end
 
 function s.read(fd, buf, size)
-  if size then
+  if buf then
     assert(#buf == size, "sanity failure: length of buffer does not match length of string format")
     return buf
   end
-  
-  return fd:read('*a')
+
+  return fd:read(size or '*a')
 end
 
 function s.write(_, data, size)

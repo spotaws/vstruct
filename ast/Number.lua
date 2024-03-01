@@ -31,9 +31,15 @@ end
 
 -- This does not support the regular read/write interface; the only thing you
 -- can do with it is get its contained number.
+-- If it holds a backreference and data is nil -- which should happen only at
+-- compile time -- it returns true to indicate that it contains something but
+-- cannot resolve it yet. If it holds a backreference and data is not-nil but
+-- also does not contain an appropriate field, it throws.
 function Number:get(data)
   if self.value then
     return self.value
+  elseif not data then
+    return true
   else
     return get(data, self.key)
   end

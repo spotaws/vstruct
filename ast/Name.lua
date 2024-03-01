@@ -16,6 +16,8 @@ local function put(data, key, val)
   end
 end
 
+-- Return a new subcontext containing only the data referenced by the key.
+-- `parent` points to the parent context, so that backreferences can be resolved.
 local function get(ctx, key)
   local val
   if not key then
@@ -34,7 +36,7 @@ local function get(ctx, key)
   end
 
   assert(val ~= nil, "vstruct: bad input while writing: no value for key "..tostring(key or ctx.n-1))
-  return { data = val, n = 1 }
+  return { data = val, n = 1, parent = ctx }
 end
 
 function Name:__init(key, child)

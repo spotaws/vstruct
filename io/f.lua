@@ -113,7 +113,6 @@ end
 local f = {}
 
 function f.size(n)
-  n = tonumber(n)
   assert(n == 4 or n == 8 or n == 16
     , "format 'f' only supports sizes 4 (float), 8 (double) and 16 (quad)")
 
