@@ -86,7 +86,7 @@ E("bad-data-missing-nested", "bad input while writing: no value for key t.x", vs
 
 -- backreference to nonexistent or non-numeric data
 E("backreference-missing", "backreferenced field.*not been read yet", vstruct.read, "#count*u4", "000")
-E("backreference-wrong-type", "backreferenced field.*not not a numeric type", vstruct.read, "count:s4 #count*u4", "abcd000")
+E("backreference-wrong-type", "backreferenced field.*not a numeric type", vstruct.read, "count:s4 #count*u4", "abcd000")
 
 -- these require a bunch of type-specific checks. I don't have a good way to do this yet and it's an open question whether I want to do it at all.
 --E("bad-data-u-string", "placeholder", vstruct.write, "u4", { "string" })
