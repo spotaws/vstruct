@@ -136,7 +136,7 @@ In this section, a *format string* means the string used to describe a binary fo
 
 ### 4.1 Error Handling ###
 
-In vstruct, all errors are *hard errors*: they are raised with `error` and must be caught with `pcall`. The vstruct API functions will always either return a valid result or raise an error. Barring bugs in vstruct itself, the only errors one is likely to encounter involve invalid arguments to the API - wrong types, a syntactically invalid format string, or a data table that doesn't match up with the format string. The one potential surprise is seeking past the start of a file; in the standard `io` library, this is a soft error (returning `nil,error`), while in vstruct this will immediately raise.
+In vstruct, all errors are *hard errors*: they are raised with `error` and must be caught with `pcall`. The vstruct API functions will always either return a valid result or raise an error. Barring bugs in vstruct itself, the only errors one is likely to encounter involve invalid arguments to the API - wrong types, a syntactically invalid format string, or a data table that doesn't match up with the format string. The one potential surprise is seeking past the start or end of a file; in the standard `io` library, this is a soft error (returning `nil,error`), while in vstruct this will immediately raise.
 
 There are also some conditions which are *not* currently treated as errors:
 
@@ -168,6 +168,12 @@ The default is nil.
 Wraps a string so that it can be used as a file. The returned object ('cur') supports cur:seek, cur:read(num_bytes) and cur:write(string), with the same behaviours as the file methods of the same names. In general, vstruct will attempt to automatically wrap strings if they are passed to it where a file is expected (and unwrap them before returning them); this function is primarily useful when more control over the process is required.
 
 To access the wrapped string, use cur.str; to determine where the read/write pointer is, use cur.pos.
+
+--------
+
+    vstruct.sizeof(fmt)
+
+Takes a format string and returns the on-disk size of the data it describes, in bytes. If the size cannot be determined solely from the string (for example, it contains backreferences or variable-width fields), or if it performs seeks (even if the seek distance is known in advance), returns `nil`.
 
 --------
 
@@ -221,8 +227,9 @@ The structure of the `data` table is expected to be the same as the structure th
 `compile` takes a format string and runs it through the compiler and code generator, but does not actually pack or unpack anything. Instead, it returns a *format object* with the following fields:
 
   * `format.source` - the original format string
-  * `format:read(fd, [data]) - equivalent to `vstruct.read(format.source, fd, data)`
+  * `format:read(fd, [data])` - equivalent to `vstruct.read(format.source, fd, data)`
   * `format:write(fd, data)` - equivalent to `vstruct.write(format.source, fd, data)`
+  * `format:sizeof()` - equivalent to `vstruct.sizeof(format.source)`
 
 In effect, the following code:
 

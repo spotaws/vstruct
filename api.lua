@@ -69,6 +69,10 @@ function api.write(ast, fd, data)
   return unwrap_fd(fd)
 end
 
+function api.sizeof(ast)
+  return ast.ast.size
+end
+
 local cache = {}
 
 function api.compile(name, format)
@@ -84,6 +88,7 @@ function api.compile(name, format)
       ast = root;
       read = api.read;
       write = api.write;
+      sizeof = api.sizeof;
     }
 
     if vstruct.cache == true then

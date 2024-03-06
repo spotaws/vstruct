@@ -5,6 +5,7 @@ local Root = Node:copy()
 
 function Root:__init(children)
   self[1] = children
+  self.size = children.size
 end
 
 function Root:read(fd, data)

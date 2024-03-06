@@ -1,4 +1,4 @@
-local Node = { size = 0 }
+local Node = {}
 Node.__index = Node
 Node.__call = function(self, ...)
   return self:new(...)
@@ -17,11 +17,12 @@ function Node:new(...)
 end
 
 function Node:__init()
+  self.size = 0
 end
 
 function Node:append(node)
   self[#self+1] = node
-  if node.size then
+  if node.size and self.size then
     self.size = self.size + node.size
   else
     self.size = nil

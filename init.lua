@@ -65,6 +65,13 @@ function vstruct.implode(mask, size)
   return int
 end
 
+-- Return the size on disk of the structure described by the format string.
+-- If it can't be determined statically, returns nil.
+function vstruct.sizeof(fmt)
+  api.check_arg("vstruct.sizeof", 1, fmt, "string")
+  return api.compile(nil, fmt):sizeof()
+end
+
 -- Given a format string, a buffer or file, and an optional third argument,
 -- read data from the buffer or file according to the format string
 function vstruct.read(fmt, ...)

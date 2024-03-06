@@ -86,6 +86,22 @@ T("UCS-2 z8", "> z8,2", x"0061 0062 0000 FFFF", "\0a\0b", x"0061 0062 0000 0000"
 
 T("repeated repeat", "2*2*u1", x"01 01 01 01", { 1, 1, 1, 1 })
 
+local sizeof = {
+  ["u4 b1 x2"] = 7;
+  ["c4"] = false;
+  ["z"] = false;
+  ["z64"] = 64;
+  ["> coords:{ x:u1 y:u1 } coords.z:u1"] = 3;
+  ["@2 u1x2"] = false;
+  ["< size:u2 str:s#size"] = false;
+}
+
+for format,expected_size in pairs(sizeof) do
+  local actual_size = vstruct.sizeof(format) or false
+  test.record("sizeof", actual_size == expected_size,
+    string.format("[%s]: %s != %s", format, expected_size, actual_size))
+end
+
 local i = 1
 for val in vstruct.records("u1", x"01 02 03 04 05 06", true) do
   test.record("stream-unpacked #"..i, val == i, val)
