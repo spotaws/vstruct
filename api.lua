@@ -69,6 +69,24 @@ function api.write(ast, fd, data)
   return unwrap_fd(fd)
 end
 
+function api.records(ast, fd, unpacked)
+  fd = wrap_fd(fd or "")
+  api.check_arg("vstruct.records", 2, fd, "file or string", is_fd)
+  if unpacked ~= nil then
+    api.check_arg("vstruct.records", 3, unpacked, "boolean")
+  end
+  return function()
+    if fd:read(0) then
+      if unpacked then
+        return _unpack(ast:read(fd))
+      else
+        return ast:read(fd)
+      end
+    end
+  end
+end
+
+
 function api.sizeof(ast)
   return ast.ast.size
 end
@@ -88,6 +106,7 @@ function api.compile(name, format)
       ast = root;
       read = api.read;
       write = api.write;
+      records = api.records;
       sizeof = api.sizeof;
     }
 

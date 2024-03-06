@@ -2,6 +2,7 @@
 -----------
 Backreference support expanded to field widths.
 `vstruct.sizeof()` function added.
+`vstruct.records()` now available as a method on compiled formats.
 
 2.2
 ---

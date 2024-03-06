@@ -116,15 +116,7 @@ function vstruct.records(fmt, fd, unpacked)
     fd = vstruct.cursor(fd)
   end
 
-  return function()
-    if fd:read(0) then
-      if unpacked then
-        return _unpack(t:read(fd))
-      else
-        return t:read(fd)
-      end
-    end
-  end
+  return t:records(fd, unpacked)
 end
 
 -- Returns an array containing the results of vstruct.records, with an optional

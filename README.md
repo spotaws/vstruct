@@ -229,6 +229,7 @@ The structure of the `data` table is expected to be the same as the structure th
   * `format.source` - the original format string
   * `format:read(fd, [data])` - equivalent to `vstruct.read(format.source, fd, data)`
   * `format:write(fd, data)` - equivalent to `vstruct.write(format.source, fd, data)`
+  * `format:records(fd, unpacked)` - equivalent to `vstruct.records(format.source, fd, unpacked)`
   * `format:sizeof()` - equivalent to `vstruct.sizeof(format.source)`
 
 In effect, the following code:
