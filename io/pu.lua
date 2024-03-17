@@ -4,9 +4,9 @@
 -- FIXME: this should support bitpacks
 
 local io = require "vstruct.io"
-local p = {}
+local pu = {}
 
-function p.size(size, frac)
+function pu.size(size, frac)
   assert(size, "format requires a size")
   assert(frac, "format requires a fractional-part size")
   if tonumber(size) and tonumber(frac) then
@@ -17,12 +17,12 @@ function p.size(size, frac)
   return size
 end
 
-function p.read(fd, buf, size, frac)
-  return io("i", "read", fd, buf, size)/(2^frac)
+function pu.read(fd, buf, size, frac)
+  return io("u", "read", fd, buf, size)/(2^frac)
 end
 
-function p.write(fd, data, size, frac)
-  return io("i", "write", fd, data * 2^frac, size)
+function pu.write(fd, data, size, frac)
+  return io("u", "write", fd, data * 2^frac, size)
 end
 
-return p
+return pu

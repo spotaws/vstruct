@@ -521,6 +521,7 @@ Affected by endianness.
 --------
 
     pS,F  -- Signed fixed point.
+    puS,F  -- Unsigned fixed point.
 
 `S` is, as usual, the size of the entire field in *bytes*. `F` is the number of *bits* of fractional precision. Thus, a 24.8 fixed point number (24 bits integer, 8 bits fraction, 32 bits total) would be written as `"p4,8"`.
 
