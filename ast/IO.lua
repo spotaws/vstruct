@@ -14,14 +14,15 @@ local function str2args(args)
     local args = args..","
 
     for arg in args:gmatch("([^,]*),") do
-      if #arg == 0 then arg = nil
-      elseif tonumber(arg) then arg = tonumber(arg)
-      elseif is_backref(arg) then
-        arg = Number(arg)
+      local larg = arg
+      if #larg == 0 then larg = nil
+      elseif tonumber(larg) then larg = tonumber(larg)
+      elseif is_backref(larg) then
+        larg = Number(larg)
         argv.has_backrefs = true
       end
       argv.n = argv.n +1
-      argv[argv.n] = arg
+      argv[argv.n] = larg
     end
   end
   return argv
